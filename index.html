@@ -56,19 +56,21 @@
     
     .botoes {
       display: flex;
-      gap: 0.7rem;
+      gap: 0.6rem;
       flex-wrap: wrap;
       justify-content: center;
     }
     
     .btn-acao {
-      padding: 0.65rem 1.6rem;
-      font-size: 1.05rem;
+      padding: 0.6rem 1.3rem;
+      font-size: 0.95rem;
       font-weight: 600;
       border-radius: 50px;
       border: none;
       color: #fff;
       transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
     }
     
     .btn-embaralhar {
@@ -78,14 +80,25 @@
     .btn-embaralhar:hover {
       background: #2ea043;
       transform: scale(1.04);
+      color: #fff;
     }
     
     .btn-creditos {
-      padding: 0.45rem 1.1rem;
+      padding: 0.45rem 1rem;
       font-size: 0.85rem;
       background: #30363d;
       border: 1px solid #484f58;
       color: #c9d1d9;
+    }
+    
+    .btn-justificativa {
+      background: #6f42c1;
+    }
+    
+    .btn-justificativa:hover {
+      background: #8250df;
+      transform: scale(1.04);
+      color: #fff;
     }
     
     .btn-acao:active {
@@ -217,6 +230,7 @@
     
     <div class="botoes">
       <button class="btn btn-acao btn-embaralhar" onclick="embaralhar()">Embaralhar</button>
+      <a href="justificativa.html" class="btn btn-acao btn-justificativa">Justificativa Pedagógica</a>
       <button class="btn btn-acao btn-creditos" onclick="abrirCreditos()">Créditos</button>
     </div>
     
@@ -269,11 +283,10 @@
       document.querySelectorAll(".confete").forEach(el => el.remove());
     }
     
-    // Eventos que funcionam melhor no celular
     document.addEventListener("DOMContentLoaded", function() {
       iniciarCubo();
       
-      // Botão Fechar dos Créditos (click + touch)
+      // Botão Fechar dos Créditos
       const btnCreditos = document.getElementById("btnFecharCreditos");
       btnCreditos.addEventListener("click", fecharCreditos);
       btnCreditos.addEventListener("touchend", function(e) {
@@ -289,7 +302,7 @@
         fecharCelebracao();
       });
       
-      // Também fecha os créditos ao tocar fora da caixa
+      // Fecha créditos ao tocar fora
       document.getElementById("modalCreditos").addEventListener("click", function(e) {
         if (e.target === this) {
           fecharCreditos();
