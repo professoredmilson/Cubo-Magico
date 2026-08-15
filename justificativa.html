@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cubo Mágico 2x2 na Educação Básica | Guia Pedagógico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F1EEE6;
+    --panel: #FFFFFF;
+    --ink: #1A1B1F;
+    --ink-soft: #55575F;
+    --line: #DAD5C6;
+    --cube-red: #C8102E;
+    --cube-orange: #FF6B00;
+    --cube-yellow: #FFC300;
+    --cube-green: #009E60;
+    --cube-blue: #0051BA;
+    --cube-white: #FFFFFF;
+  }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Source Sans 3', sans-serif;
+  }
+
+  h1, h2, h3, .display-font{
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  .eyebrow{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    color: var(--cube-blue);
+  }
+
+  /* --- faixa de facetas (elemento estrutural recorrente) --- */
+  .facet-strip{
+    display: flex;
+    height: 6px;
+    width: 100%;
+  }
+  .facet-strip span{ flex: 1 1 0; }
+  .facet-strip .f1{ background: var(--cube-red); }
+  .facet-strip .f2{ background: var(--cube-orange); }
+  .facet-strip .f3{ background: var(--cube-yellow); }
+  .facet-strip .f4{ background: var(--cube-green); }
+  .facet-strip .f5{ background: var(--cube-blue); }
+  .facet-strip .f6{ background: var(--cube-white); border-top: 1px solid var(--line); }
+
+  /* --- navbar --- */
+  .navbar-custom{
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .navbar-custom .navbar-brand{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .navbar-custom .nav-link{
+    font-weight: 600;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+  }
+  .navbar-custom .nav-link:hover{ color: var(--cube-blue); }
+
+  /* --- hero --- */
+  .hero{ padding: 4.5rem 0 3.5rem; }
+  .hero h1{
+    font-size: clamp(2.2rem, 4.2vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.08;
+  }
+  .hero .lede{
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    max-width: 46ch;
+  }
+  .btn-cube-primary{
+    background: var(--cube-blue);
+    border-color: var(--cube-blue);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.65rem 1.4rem;
+    border-radius: 8px;
+  }
+  .btn-cube-primary:hover{ background: #003d8a; border-color: #003d8a; color:#fff; }
+  .btn-cube-outline{
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    font-weight: 600;
+    padding: 0.6rem 1.3rem;
+    border-radius: 8px;
+    background: transparent;
+  }
+  .btn-cube-outline:hover{ background: var(--ink); color: var(--bg); }
+
+  /* --- cubo 3D --- */
+  .scene{
+    perspective: 1300px;
+    width: 240px;
+    height: 240px;
+    margin: 0 auto;
+  }
+  .cube-tilt{
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transform: rotateX(-24deg);
+  }
+  .cube-spin{
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: spin 20s linear infinite;
+  }
+  @keyframes spin{
+    from{ transform: rotateY(0deg); }
+    to{ transform: rotateY(360deg); }
+  }
+  .face{
+    position: absolute;
+    width: 240px; height: 240px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
+    padding: 6px;
+    box-sizing: border-box;
+    background: #17181c;
+    border-radius: 18px;
+  }
+  .face span{ border-radius: 8px; }
+  .face-front{ transform: translateZ(120px); }
+  .face-back{ transform: rotateY(180deg) translateZ(120px); }
+  .face-right{ transform: rotateY(90deg) translateZ(120px); }
+  .face-left{ transform: rotateY(-90deg) translateZ(120px); }
+  .face-top{ transform: rotateX(90deg) translateZ(120px); }
+  .face-bottom{ transform: rotateX(-90deg) translateZ(120px); }
+
+  .c-red span{ background: var(--cube-red); }
+  .c-orange span{ background: var(--cube-orange); }
+  .c-yellow span{ background: var(--cube-yellow); }
+  .c-green span{ background: var(--cube-green); }
+  .c-blue span{ background: var(--cube-blue); }
+  .c-white span{ background: var(--cube-white); border: 1px solid #d9d9d9; }
+
+  @media (prefers-reduced-motion: reduce){
+    .cube-spin{ animation: none; }
+  }
+
+  /* --- seções gerais --- */
+  section{ padding: 4rem 0; }
+  .section-title{
+    font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+  .section-lede{
+    color: var(--ink-soft);
+    max-width: 62ch;
+  }
+
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+
+  /* --- cards de benefícios --- */
+  .benefit-card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.6rem;
+    height: 100%;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .benefit-card:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(26,27,31,0.08);
+  }
+  .benefit-icon{
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.9rem;
+    font-size: 1.05rem;
+  }
+  .benefit-card h3{
+    font-size: 1.08rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .benefit-card p{
+    font-size: 0.94rem;
+    color: var(--ink-soft);
+    margin-bottom: 0;
+  }
+
+  /* --- linha do tempo / passos --- */
+  .step{
+    display: flex;
+    gap: 1rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .step:last-child{ border-bottom: none; }
+  .step .num{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    color: var(--cube-blue);
+    font-size: 1.1rem;
+    min-width: 2.2rem;
+  }
+  .step h3{ font-size: 1.02rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .step p{ color: var(--ink-soft); margin-bottom: 0; font-size: 0.95rem; }
+
+  /* --- casos reais --- */
+  .case-card{
+    border-left: 4px solid var(--cube-blue);
+    background: var(--panel);
+    border-radius: 0 12px 12px 0;
+    padding: 1.4rem 1.6rem;
+  }
+  .case-card + .case-card{ margin-top: 1rem; }
+  .case-card .loc{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--cube-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* --- callout --- */
+  .callout{
+    background: #FFF7DE;
+    border: 1px solid #F0D98A;
+    border-radius: 14px;
+    padding: 1.5rem 1.7rem;
+  }
+
+  .callout-quiet{
+    background: #EFF4FB;
+    border: 1px solid #C8D9EF;
+    border-radius: 14px;
+    padding: 1.5rem 1.7rem;
+  }
+
+  /* --- fontes --- */
+  .source-item{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .source-item:hover{ border-color: var(--cube-blue); }
+  .source-item .tag{
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cube-blue);
+  }
+  .source-item .url{
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    word-break: break-all;
+  }
+
+  footer{
+    background: var(--ink);
+    color: #CFCFD4;
+    padding: 2.5rem 0;
+  }
+  footer a{ color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-custom sticky-top py-3">
+  <div class="container">
+    <a class="navbar-brand" href="#top">Cubo 2x2 <span style="color:var(--cube-blue)">na Escola</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto gap-lg-3">
+        <li class="nav-item"><a class="nav-link" href="#por-que">Por que o 2x2</a></li>
+        <li class="nav-item"><a class="nav-link" href="#beneficios">Benefícios</a></li>
+        <li class="nav-item"><a class="nav-link" href="#evidencias">Evidências</a></li>
+        <li class="nav-item"><a class="nav-link" href="#aplicacao">Em sala de aula</a></li>
+        <li class="nav-item"><a class="nav-link" href="#fontes">Fontes</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="facet-strip"><span class="f1"></span><span class="f2"></span><span class="f3"></span><span class="f4"></span><span class="f5"></span><span class="f6"></span></div>
+
+<!-- HERO -->
+<header id="top" class="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <p class="eyebrow mb-3">Guia pedagógico · Educação básica</p>
+        <h1 class="mb-4">Duas camadas, seis faces e um jeito de ensinar a pensar.</h1>
+        <p class="lede mb-4">
+          O cubo mágico 2x2 é a versão mais simples do quebra-cabeça de Ernő Rubik — e é exatamente
+          essa simplicidade que o transforma em um dos recursos mais acessíveis para trabalhar raciocínio
+          lógico, matemática, memória e autoestima com crianças do ensino fundamental.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="#beneficios" class="btn-cube-primary">Ver os benefícios</a>
+          <a href="#fontes" class="btn-cube-outline">Ver as fontes</a>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="scene" aria-hidden="true">
+          <div class="cube-tilt">
+            <div class="cube-spin">
+              <div class="face face-front c-blue"><span></span><span></span><span></span><span></span></div>
+              <div class="face face-back c-green"><span></span><span></span><span></span><span></span></div>
+              <div class="face face-right c-red"><span></span><span></span><span></span><span></span></div>
+              <div class="face face-left c-orange"><span></span><span></span><span></span><span></span></div>
+              <div class="face face-top c-white"><span></span><span></span><span></span><span></span></div>
+              <div class="face face-bottom c-yellow"><span></span><span></span><span></span><span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- POR QUE O 2X2 -->
+<section id="por-que">
+  <div class="container">
+    <div class="row g-5 align-items-start">
+      <div class="col-lg-5">
+        <p class="eyebrow mb-2">A porta de entrada certa</p>
+        <h2 class="section-title">Por que começar pelo 2x2, e não pelo 3x3?</h2>
+        <p class="section-lede">
+          O cubo 2x2x2 (também chamado de cubo de bolso) tem apenas duas camadas e nenhuma peça de meio
+          ou centro fixo. Isso reduz drasticamente a curva de aprendizagem: a solução completa pode ser
+          ensinada com poucas sequências de movimentos, o que faz sentido pedagógico para crianças que
+          estão tendo o primeiro contato com o quebra-cabeça.
+        </p>
+      </div>
+      <div class="col-lg-7">
+        <div class="row g-4">
+          <div class="col-sm-6">
+            <div class="panel p-4 h-100">
+              <h3 class="h6 fw-bold">Menos peças, mesma lógica</h3>
+              <p class="small text-body-secondary mb-0">
+                Como o 2x2 é essencialmente um 3x3 sem as peças de aresta e centro, ele preserva a
+                mesma lógica espacial e algorítmica do cubo tradicional, mas em uma escala que uma
+                criança consegue dominar em poucas aulas.
+              </p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="panel p-4 h-100">
+              <h3 class="h6 fw-bold">Vitória rápida, motivação real</h3>
+              <p class="small text-body-secondary mb-0">
+                Resolver o primeiro cubo sozinho gera uma sensação imediata de competência. Essa
+                "vitória rápida" é o que sustenta o interesse da turma antes de avançar para
+                desafios maiores, como o 3x3.
+              </p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="panel p-4 h-100">
+              <h3 class="h6 fw-bold">Baixo custo, alta escala</h3>
+              <p class="small text-body-secondary mb-0">
+                É um material barato, compacto e durável — viável para uma escola pública equipar
+                uma turma inteira, o que é decisivo em contextos de recursos limitados.
+              </p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="panel p-4 h-100">
+              <h3 class="h6 fw-bold">Ponte para o 3x3</h3>
+              <p class="small text-body-secondary mb-0">
+                Depois de dominar o 2x2, o aluno já entende conceitos de camadas, permutação e
+                orientação — pré-requisitos que tornam o salto para o cubo tradicional muito mais
+                natural.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="facet-strip"><span class="f5"></span><span class="f1"></span><span class="f3"></span><span class="f6"></span><span class="f4"></span><span class="f2"></span></div>
+
+<!-- BENEFÍCIOS -->
+<section id="beneficios" class="bg-white">
+  <div class="container">
+    <p class="eyebrow mb-2">O que a criança desenvolve</p>
+    <h2 class="section-title">Nove competências que cabem na palma da mão</h2>
+    <p class="section-lede mb-5">
+      Estudos e relatos de projetos de extensão e experiências em escolas brasileiras convergem para
+      um mesmo conjunto de ganhos cognitivos e socioemocionais associados à prática regular do cubo mágico.
+    </p>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="benefit-card">
+          <div class="benefit-icon" style="background:var(--cube-blue)">Lg</div>
+          <h3>Raciocínio lógico</h3>
+          <p>A resolução exige planejar sequências de movimentos e antecipar consequências — o mesmo tipo de pensamento cobrado em problemas de matemática e programação.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="benefit-card">
+          <div class="benefit-icon" style="background:var(--cube-red)">Mt</div>
+          <h3>Matemática na prática</h3>
+          <p>Conceitos de geometria espacial, simetria e álgebra (permutações e sequências de operações) aparecem de forma concreta, antes mesmo de virarem fórmula no caderno.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="benefit-card">
+          <div class="benefit-icon" style="background:var(--cube-green)">Mm</div>
+          <h3>Memória de trabalho</h3>
+          <p>Memorizar pequenas sequências de movimentos e reconhecer padrões de cor treina a memória de curto prazo de forma lúdica e repetida.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="benefit-card">
+          <div class="benefit-icon" style="background:var(--cube-orange)">Fc</div>
+          <h3>Concentração e foco</h3>
+          <p>Resolver o cubo exige atenção sustentada a um único objeto por vários minutos — uma prática valiosa em salas de aula marcadas por distrações constantes.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="benefit-card">
+          <div class="benefit-icon" style="background:#7C4DFF">Pr</div>
+          <h3>Persistência diante do erro</h3>
+          <p>Errar um movimento é parte do processo. A criança aprende, na prática, que o resultado vem de tentativa, ajuste e repetição — não de acerto imediato.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="benefit-card">
+          <div class="benefit-icon" style="background:var(--cube-yellow); color:#3a2c00">Au</div>
+          <h3>Autoestima</h3>
+          <p>Relatos de professores mostram que alunos com dificuldades em outras disciplinas se destacam no cubo — e essa conquista visível impacta positivamente a confiança escolar.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="benefit-card">
+          <div class="benefit-icon" style="background:#00897B">Cm</div>
+          <h3>Coordenação motora fina</h3>
+          <p>Girar as camadas com precisão exercita a destreza manual, algo especialmente relevante nos primeiros anos do ensino fundamental.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="benefit-card">
+          <div class="benefit-icon" style="background:#455A64">Eq</div>
+          <h3>Cooperação e trabalho em equipe</h3>
+          <p>Em oficinas e campeonatos escolares, alunos ensinam colegas e trocam estratégias — transformando o cubo em ponte social, não só individual.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="benefit-card">
+          <div class="benefit-icon" style="background:#D81B60">In</div>
+          <h3>Potencial inclusivo</h3>
+          <p>Educadores especializados relatam uso do cubo como reforço de habilidades sociais também com estudantes autistas, dentro de um plano pedagógico individualizado.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVIDÊNCIAS / FUNDAMENTAÇÃO -->
+<section id="evidencias">
+  <div class="container">
+    <p class="eyebrow mb-2">Base teórica e prática</p>
+    <h2 class="section-title mb-4">Não é só intuição — há teoria e prática por trás</h2>
+
+    <div class="row g-4 mb-5">
+      <div class="col-lg-6">
+        <div class="callout-quiet h-100">
+          <h3 class="h5 fw-bold mb-2">Vygotsky e a Zona de Desenvolvimento Proximal</h3>
+          <p class="mb-0 text-body-secondary">
+            Pesquisas em Educação Matemática ligam o uso de materiais concretos, como o cubo mágico,
+            à Zona de Desenvolvimento Proximal de Vygotsky: o espaço entre o que a criança já faz
+            sozinha e o que consegue alcançar com a mediação de um professor ou colega mais experiente.
+            O jogo funciona como essa mediação, tornando o aprendizado colaborativo e reduzindo a
+            ansiedade que muitos estudantes associam à matemática.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="callout h-100">
+          <h3 class="h5 fw-bold mb-2">Um brinquedo com histórico comprovado</h3>
+          <p class="mb-0 text-body-secondary">
+            Desde sua criação pelo húngaro Ernő Rubik em 1974, estima-se que mais de 450 milhões de
+            unidades do quebra-cabeça já tenham sido vendidas — o que faz dele um dos objetos lúdicos
+            mais estudados e replicados em projetos educacionais ao redor do mundo, incluindo
+            iniciativas de extensão universitária no Brasil.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="h5 fw-bold mb-3">Experiências reais em escolas brasileiras</h3>
+    <div>
+      <div class="case-card">
+        <div class="loc">São Paulo (SP) · Ensino Fundamental</div>
+        <p class="mb-0 mt-1">
+          Em uma escola municipal na Freguesia do Ó, um professor de história usou o cubo mágico para
+          conter a agitação da turma e acabou criando um projeto contínuo com 25 estudantes. Alunos com
+          dificuldades de aprendizagem melhoraram os resultados escolares depois de participar, e a
+          escola passou a disputar campeonatos.
+        </p>
+      </div>
+      <div class="case-card">
+        <div class="loc">Jacareí (SP) · Escola Técnica</div>
+        <p class="mb-0 mt-1">
+          Um professor de matemática integrou o cubo às aulas depois que uma aluna sugeriu que a
+          montagem completa do quebra-cabeça poderia valer nota extra. O projeto, iniciado há quase uma
+          década, transformou a relação de parte dos estudantes com uma disciplina frequentemente vista
+          como difícil.
+        </p>
+      </div>
+      <div class="case-card">
+        <div class="loc">Universidade Federal do Mato Grosso do Sul</div>
+        <p class="mb-0 mt-1">
+          O Projeto Cubo Mágico da UFMS promove oficinas mensais que unem ensino, lazer e ciência,
+          trabalhando simultaneamente habilidades cognitivas — como visão espacial, memória de trabalho
+          e velocidade de processamento — e socioemocionais, como paciência e persistência.
+        </p>
+      </div>
+    </div>
+
+    <div class="callout mt-4">
+      <h3 class="h6 fw-bold mb-2">Um cuidado honesto: desafios de implementação</h3>
+      <p class="mb-0 text-body-secondary">
+        A literatura também aponta obstáculos reais: muitos professores ainda não se sentem preparados
+        para integrar o cubo ao currículo de forma estruturada, e escolas públicas com orçamento
+        limitado podem ter dificuldade para adquirir cubos para toda a turma. Por isso, formação
+        docente e planejamento de recursos são parte essencial de qualquer proposta séria de uso do
+        cubo 2x2 em sala de aula.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="facet-strip"><span class="f2"></span><span class="f4"></span><span class="f5"></span><span class="f1"></span><span class="f6"></span><span class="f3"></span></div>
+
+<!-- APLICAÇÃO EM SALA -->
+<section id="aplicacao" class="bg-white">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-5">
+        <p class="eyebrow mb-2">Colocando em prática</p>
+        <h2 class="section-title">Como introduzir o cubo 2x2 na turma</h2>
+        <p class="section-lede">
+          Um roteiro simples, testado em relatos de professores da educação básica, para transformar o
+          cubo em rotina pedagógica — e não em modismo passageiro.
+        </p>
+      </div>
+      <div class="col-lg-7">
+        <div class="panel p-4 p-md-5">
+          <div class="step">
+            <div class="num">01</div>
+            <div>
+              <h3>Apresente como desafio, não como tarefa</h3>
+              <p>Deixe as crianças manusearem o cubo livremente antes de qualquer instrução formal, despertando curiosidade genuína.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="num">02</div>
+            <div>
+              <h3>Ensine em pequenas sequências</h3>
+              <p>Divida a solução em poucos passos memorizáveis, celebrando cada camada concluída como uma conquista independente.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="num">03</div>
+            <div>
+              <h3>Conecte com o conteúdo da aula</h3>
+              <p>Use o cubo para ilustrar simetria, frações de cor por face, ou lógica de sequência em matemática e ciências.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="num">04</div>
+            <div>
+              <h3>Estimule o ensino entre pares</h3>
+              <p>Alunos que aprendem primeiro tornam-se monitores dos colegas, reforçando cooperação e fixando o próprio conhecimento.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="num">05</div>
+            <div>
+              <h3>Crie um ritual: desafio ou mini-campeonato</h3>
+              <p>Eventos periódicos mantêm o engajamento vivo e dão visibilidade a alunos que se destacam fora do currículo tradicional.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FONTES -->
+<section id="fontes">
+  <div class="container">
+    <p class="eyebrow mb-2">Transparência</p>
+    <h2 class="section-title mb-2">Fontes consultadas</h2>
+    <p class="section-lede mb-4">
+      Esta página foi construída a partir de artigos acadêmicos, reportagens e projetos de extensão
+      sobre o uso educacional do cubo mágico. Vale a pena ler as fontes na íntegra.
+    </p>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <a class="source-item" href="https://editorarealize.com.br/editora/anais/conedu/2024/TRABALHO_COMPLETO_EV200_MD1_ID14562_TB5432_14102024092334.pdf" target="_blank" rel="noopener">
+          <div class="tag">Artigo acadêmico · CONEDU 2024</div>
+          <div class="fw-semibold my-1">Cubo Mágico: uma proposta para ensinar e aprender matemática</div>
+          <div class="url">editorarealize.com.br</div>
+        </a>
+      </div>
+      <div class="col-md-6">
+        <a class="source-item" href="https://ufr.edu.br/profmat/wp-content/uploads/2025/06/Dissertacao_final_GRAZIELE.pdf" target="_blank" rel="noopener">
+          <div class="tag">Dissertação · PROFMAT / UFR</div>
+          <div class="fw-semibold my-1">O uso do cubo mágico como ferramenta de ensino</div>
+          <div class="url">ufr.edu.br</div>
+        </a>
+      </div>
+      <div class="col-md-6">
+        <a class="source-item" href="https://www.terra.com.br/noticias/educacao/fora-de-brincadeira-o-cubo-magico-pode-ajudar-na-escola,44d9358642f99410VgnVCM20000099cceb0aRCRD.html" target="_blank" rel="noopener">
+          <div class="tag">Reportagem · Terra Educação</div>
+          <div class="fw-semibold my-1">Fora de brincadeira: o cubo mágico pode ajudar na escola</div>
+          <div class="url">terra.com.br</div>
+        </a>
+      </div>
+      <div class="col-md-6">
+        <a class="source-item" href="https://www.diariodigital.com.br/geral/alem-de-passatempo-cubo-magico-e-meio-para-desenvolvimento-cognitivo" target="_blank" rel="noopener">
+          <div class="tag">Reportagem · Diário Digital</div>
+          <div class="fw-semibold my-1">Além de passatempo, cubo mágico é meio para desenvolvimento cognitivo</div>
+          <div class="url">diariodigital.com.br</div>
+        </a>
+      </div>
+      <div class="col-md-6">
+        <a class="source-item" href="https://afubra.com.br/cubo-magico-integra-jovens-no-espaco-da-inovacao-do-agro/" target="_blank" rel="noopener">
+          <div class="tag">Reportagem · Afubra</div>
+          <div class="fw-semibold my-1">Cubo mágico integra jovens no Espaço da Inovação do Agro</div>
+          <div class="url">afubra.com.br</div>
+        </a>
+      </div>
+      <div class="col-md-6">
+        <a class="source-item" href="https://soescola.com/2017/11/uso-do-cubo-magico-ajuda-na-aprendizagem-da-matematica.html" target="_blank" rel="noopener">
+          <div class="tag">Reportagem · Só Escola</div>
+          <div class="fw-semibold my-1">Uso do cubo mágico ajuda na aprendizagem da matemática</div>
+          <div class="url">soescola.com</div>
+        </a>
+      </div>
+      <div class="col-md-6">
+        <a class="source-item" href="https://cubovelocidade.com.br/tutorial/cubo-magico-2x2x2-metodo-basico/" target="_blank" rel="noopener">
+          <div class="tag">Tutorial técnico · Cubo Velocidade</div>
+          <div class="fw-semibold my-1">Como resolver o cubo mágico 2x2x2 com apenas 2 fórmulas</div>
+          <div class="url">cubovelocidade.com.br</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8">
+        <p class="mb-1 fw-bold text-white">Cubo 2x2 na Escola</p>
+        <p class="small mb-0">
+          Conteúdo produzido com apoio de IA a partir de fontes públicas listadas acima. Recomenda-se
+          consultar as fontes originais e a coordenação pedagógica local antes de implementar o projeto.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
