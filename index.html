@@ -92,7 +92,7 @@
       transform: scale(0.97);
     }
     
-    /* Celebração (mantida para uso futuro) */
+    /* Celebração */
     .celebracao {
       position: fixed;
       inset: 0;
@@ -131,13 +131,16 @@
     }
     
     .btn-fechar {
-      padding: 0.55rem 1.6rem;
+      padding: 0.7rem 1.8rem;
+      font-size: 1.05rem;
       font-weight: 600;
       border-radius: 50px;
       background: #238636;
       border: none;
       color: #fff;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     .confete {
@@ -175,6 +178,7 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
     }
     
     .modal-creditos.ativo {
@@ -189,6 +193,8 @@
       padding: 1.6rem 1.9rem;
       max-width: 320px;
       text-align: center;
+      position: relative;
+      z-index: 10001;
     }
     
     .modal-box p {
@@ -221,7 +227,7 @@
     <div class="celebracao-conteudo">
       <h1>🎉 Parabéns! 🎉</h1>
       <p>Você completou o Cubo Mágico 2x2!</p>
-      <button class="btn-fechar" onclick="fecharCelebracao()">Continuar</button>
+      <button class="btn-fechar" id="btnFecharCelebracao">Continuar</button>
     </div>
   </div>
 
@@ -229,7 +235,7 @@
   <div class="modal-creditos" id="modalCreditos">
     <div class="modal-box">
       <p>Feito pelo professor Edmilson Souza, PA do GET Olimpíadas Rio 2016</p>
-      <button class="btn-fechar" onclick="fecharCreditos()">Fechar</button>
+      <button class="btn-fechar" id="btnFecharCreditos">Fechar</button>
     </div>
   </div>
 
@@ -250,11 +256,6 @@
       iniciarCubo("initmove=random&buttonbar=1&bgcolor=0d1117&butbgcolor=21262d&fonttype=0&scale=5&snap=1&randmoves=15");
     }
     
-    function fecharCelebracao() {
-      document.getElementById("celebracao").classList.remove("ativo");
-      document.querySelectorAll(".confete").forEach(el => el.remove());
-    }
-    
     function abrirCreditos() {
       document.getElementById("modalCreditos").classList.add("ativo");
     }
@@ -263,9 +264,37 @@
       document.getElementById("modalCreditos").classList.remove("ativo");
     }
     
-    // Garante que o cubo aparece ao abrir a página
+    function fecharCelebracao() {
+      document.getElementById("celebracao").classList.remove("ativo");
+      document.querySelectorAll(".confete").forEach(el => el.remove());
+    }
+    
+    // Eventos que funcionam melhor no celular
     document.addEventListener("DOMContentLoaded", function() {
       iniciarCubo();
+      
+      // Botão Fechar dos Créditos (click + touch)
+      const btnCreditos = document.getElementById("btnFecharCreditos");
+      btnCreditos.addEventListener("click", fecharCreditos);
+      btnCreditos.addEventListener("touchend", function(e) {
+        e.preventDefault();
+        fecharCreditos();
+      });
+      
+      // Botão Continuar da Celebração
+      const btnCeleb = document.getElementById("btnFecharCelebracao");
+      btnCeleb.addEventListener("click", fecharCelebracao);
+      btnCeleb.addEventListener("touchend", function(e) {
+        e.preventDefault();
+        fecharCelebracao();
+      });
+      
+      // Também fecha os créditos ao tocar fora da caixa
+      document.getElementById("modalCreditos").addEventListener("click", function(e) {
+        if (e.target === this) {
+          fecharCreditos();
+        }
+      });
     });
   </script>
 </body>
