@@ -59,6 +59,7 @@
       gap: 0.6rem;
       flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
     }
     
     .btn-acao {
@@ -101,8 +102,39 @@
       color: #fff;
     }
     
+    .btn-parar {
+      background: #da3633;
+    }
+    
+    .btn-parar:hover {
+      background: #f85149;
+      transform: scale(1.04);
+      color: #fff;
+    }
+    
+    .btn-reiniciar {
+      background: #1f6feb;
+    }
+    
+    .btn-reiniciar:hover {
+      background: #388bfd;
+      transform: scale(1.04);
+      color: #fff;
+    }
+    
     .btn-acao:active {
       transform: scale(0.97);
+    }
+    
+    #timer {
+      font-size: 1.6rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.05em;
+      color: #ffd700;
+      min-width: 110px;
+      text-align: center;
+      display: none;
     }
     
     /* Celebração */
@@ -229,9 +261,15 @@
     </div>
     
     <div class="botoes">
-      <button class="btn btn-acao btn-embaralhar" onclick="embaralhar()">Embaralhar</button>
-      <a href="justificativa.html" class="btn btn-acao btn-justificativa">Justificativa</a>
-      <button class="btn btn-acao btn-creditos" onclick="abrirCreditos()">Créditos</button>
+      <button class="btn btn-acao btn-embaralhar" id="btnEmbaralhar" onclick="embaralhar()">Embaralhar</button>
+      <a href="justificativa.html" class="btn btn-acao btn-justificativa" id="btnJustificativa">Justificativa</a>
+      <button class="btn btn-acao btn-creditos" id="btnCreditos" onclick="abrirCreditos()">Créditos</button>
+      
+      <!-- Cronômetro (oculto até o jogador pressionar Parar) -->
+      <div id="timer">00:00.00</div>
+      
+      <button class="btn btn-acao btn-parar" id="btnParar" style="display: none;" onclick="pararCronometro()">Parar</button>
+      <button class="btn btn-acao btn-reiniciar" id="btnReiniciar" style="display: none;" onclick="reiniciarJogo()">Reiniciar</button>
     </div>
     
   </div>
@@ -257,6 +295,11 @@
   <script src="https://animcubejs.cubing.net/AnimCube2.js"></script>
   
   <script>
+    let tempoInicio = 0;
+    let intervaloCronometro = null;
+    let cronometroRodando = false;
+    let tempoAcumulado = 0;
+
     function iniciarCubo(params = "buttonbar=1&bgcolor=0d1117&butbgcolor=21262d&fonttype=0&scale=0&snap=1") {
       const container = document.getElementById("animcube");
       container.innerHTML = "";
@@ -266,8 +309,91 @@
       container.appendChild(script);
     }
     
+    function formatarTempo(ms) {
+      const totalCentésimos = Math.floor(ms / 10);
+      const minutos = Math.floor(totalCentésimos / 6000);
+      const segundos = Math.floor((totalCentésimos % 6000) / 100);
+      const centesimos = totalCentésimos % 100;
+      
+      return String(minutos).padStart(2, "0") + ":" +
+             String(segundos).padStart(2, "0") + "." +
+             String(centesimos).padStart(2, "0");
+    }
+    
+    function atualizarCronometro() {
+      if (!cronometroRodando) return;
+      const agora = Date.now();
+      const decorrido = tempoAcumulado + (agora - tempoInicio);
+      // Não atualiza a tela enquanto está rodando (para não desconcentrar)
+    }
+    
+    function iniciarCronometro() {
+      if (cronometroRodando) return;
+      tempoInicio = Date.now();
+      cronometroRodando = true;
+      intervaloCronometro = setInterval(atualizarCronometro, 10);
+    }
+    
+    function pararCronometro() {
+      if (!cronometroRodando) return;
+      
+      clearInterval(intervaloCronometro);
+      tempoAcumulado += Date.now() - tempoInicio;
+      cronometroRodando = false;
+      
+      // Mostra apenas o tempo final
+      document.getElementById("timer").textContent = formatarTempo(tempoAcumulado);
+      document.getElementById("timer").style.display = "block";
+      
+      // Opcional: desabilita o botão Parar após usar
+      document.getElementById("btnParar").disabled = true;
+      document.getElementById("btnParar").style.opacity = "0.6";
+    }
+    
+    function zerarCronometro() {
+      clearInterval(intervaloCronometro);
+      cronometroRodando = false;
+      tempoAcumulado = 0;
+      tempoInicio = 0;
+      document.getElementById("timer").textContent = "00:00";
+      document.getElementById("timer").style.display = "none";
+      
+      // Reabilita o botão Parar
+      const btnParar = document.getElementById("btnParar");
+      btnParar.disabled = false;
+      btnParar.style.opacity = "1";
+    }
+    
     function embaralhar() {
       iniciarCubo("initmove=random&buttonbar=1&bgcolor=0d1117&butbgcolor=21262d&fonttype=0&scale=0&snap=1&randmoves=25");
+      
+      // Oculta Justificativa e Créditos
+      document.getElementById("btnJustificativa").style.display = "none";
+      document.getElementById("btnCreditos").style.display = "none";
+      
+      // Inicia o cronômetro (oculto)
+      zerarCronometro();
+      iniciarCronometro();
+      
+      // Mostra botões Parar e Reiniciar
+      document.getElementById("btnParar").style.display = "inline-block";
+      document.getElementById("btnReiniciar").style.display = "inline-block";
+    }
+    
+    function reiniciarJogo() {
+      // Para e zera o cronômetro
+      zerarCronometro();
+      
+      // Oculta Parar e Reiniciar
+      document.getElementById("btnParar").style.display = "none";
+      document.getElementById("btnReiniciar").style.display = "none";
+      
+      // Mostra novamente Justificativa e Créditos
+      document.getElementById("btnJustificativa").style.display = "inline-block";
+      document.getElementById("btnCreditos").style.display = "inline-block";
+      
+      // Restaura o cubo ao estado inicial
+      iniciarCubo();
     }
     
     function abrirCreditos() {
